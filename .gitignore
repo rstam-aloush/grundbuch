@@ -1,0 +1,16 @@
+.idea
+__pycache__/
+**/credentials.py
+.vscode/
+**/*.env
+**/pw.txt
+**/secrets/*
+**/venv/*
+**/.venv/*
+**/.pytest_cache/*
+**/*.csv
+**/*.CSV
+**/*.xlsx
+**/*.xls
+**/*.xlsm
+**/*.json
