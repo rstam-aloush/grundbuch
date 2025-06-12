@@ -2,24 +2,32 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 import pyodbc
-import credentials
+from dotenv import load_dotenv
 
+# ---------------- Konfiguration ----------------
+load_dotenv()
+server = os.getenv("SERVER")
+database = os.getenv("DATABASE")
+query_2020 = os.getenv("QUERY_2020")
+query_1999 = os.getenv("QUERY_1999")
+
+# ---------------- Datenbankverbindung ----------------
 conn = pyodbc.connect(
     "Driver={SQL Server};"
-    f"Server={credentials.server};"
+    f"Server={server};"
     "Trusted_Connection=yes;"
 )
 
 cursor = conn.cursor()
-cursor.execute(f"USE {credentials.database}")
+cursor.execute(f"USE {database}")
 
 query_2020 = f"""
 SELECT *
-  FROM {credentials.query_2020}
+  FROM {query_2020}
 """
 query_1999 = f"""
 SELECT *
-  FROM {credentials.query_1999}
+  FROM {query_1999}
 """
 
 # --------------- Daten laden und verarbeiten ---------------
@@ -75,7 +83,7 @@ for spalte in wertspalten:
     total_df[f"{spalte}"] = df_aggregiert.groupby("Kategorie")[spalte].pct_change() * 100
 
 # ---------------- Plotting mit Alarmmarkierung ----------------
-output_dir = "plots"
+output_dir = "Data\plots"
 os.makedirs(output_dir, exist_ok=True)
 
 for spalte in wertspalten:
@@ -108,7 +116,7 @@ for spalte in wertspalten:
     plt.savefig(os.path.join(output_dir, f"{spaltenname}.png"))
     plt.close()
 
-with pd.ExcelWriter("GB_prozentuale.xlsx", engine="xlsxwriter") as writer:
+with pd.ExcelWriter("Data\GB_prozentuale.xlsx", engine="xlsxwriter") as writer:
     total_df.to_excel(writer, index=False, sheet_name="Prozentwerte") 
 
     workbook = writer.book
@@ -121,3 +129,8 @@ with pd.ExcelWriter("GB_prozentuale.xlsx", engine="xlsxwriter") as writer:
         for col_index, value in enumerate(row[2:], start=2):
             if pd.notna(value) and abs(value) > 19:
                 worksheet.write(row_inderx + 1, col_index, value, red_bold)
+
+
+print("✅ Die Daten wurden erfolgreich verarbeitet und gespeichert.")
+print("📁 Sie befinden sich im Ordner 'Daten'.")
+
